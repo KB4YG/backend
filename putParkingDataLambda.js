@@ -1,61 +1,63 @@
 const AWS = require('aws-sdk');
 const {v4: uuidv4} = require('uuid');
 
+const Ajv = require("ajv")
+const ajv = new Ajv()
+
 const dynamo = new AWS.DynamoDB.DocumentClient();
 
-/**
- * Demonstrates a simple HTTP endpoint using API Gateway. You have full
- * access to the request and response payload, including headers and
- * status code.
- *
- * To scan a DynamoDB table, make a GET request with the TableName as a
- * query string parameter. To put, update, or delete an item, make a POST,
- * PUT, or DELETE request respectively, passing in the payload to the
- * DynamoDB API as a JSON body.
- */
-exports.handler = async (event, context) => {
+const locationDataSchema = {
+    type: "object",
+    properties: {
+        ParkingLotId: { type: "string" },
+        Temp: { type: "number" },
+        UsedGeneral: { type: "number" },
+        UsedHandicap: { type: "number" },
+        Confidence: { type: "number" } // might need to be float32
+    },
+    required: ["ParkingLotId", "Temp", "UsedGeneral", "UsedHandicap", "Confidence"],
+    additionalProperties: false
+}
+const validate = ajv.compile(locationDataSchema)
 
-    let body;
-    let statusCode = '200';
-    
-    const now = Date.now();
-    const locationUpdateId = uuidv4();
-   
-    
+exports.handler = async (event, context) => {
+    let status = 400;
+
     const headers = {
         'Content-Type': 'application/json',
     };
 
-    if (event.state.reported.OpenGeneral === undefined || event.state.reported.OpenHandicap === undefined) {
-    statusCode = '400';
-    } else {
+    if (event.queryStringParameters && validate(event.queryStringParameters)) {
+        const locationData = event.queryStringParameters
+        locationData[Id] = uuidv4()
+        locationData[LastUpdate] = Date.now()
         try {
             await dynamo.put({
                 TableName: "ParkingLotData",
-                            Item:{
-                                Id: locationUpdateId, 
-                                ParkingLotId: event.state.reported.LocationId,
-                                LastUpdate: now,
-                                Temp: parseFloat(event.state.reported.Temp),
-                                OpenGeneral: parseInt(event.state.reported.OpenGeneral),
-                                OpenHandicap: parseInt(event.state.reported.OpenHandicap),
-                                UsedGeneral: parseInt(event.state.reported.UsedGeneral),
-                                UsedHandicap: parseInt(event.state.reported.UsedHandicap),
-                                Confidence: parseFloat(event.state.reported.Confidence)
-                                
-                            }
-            
+                Item: {
+                    locationData
+                }
             }).promise();
+            status = 200
+            result = "Successfully added location data to database"
         } catch (err) {
-            statusCode = '400';
-            body = err.message;
+            status = 400;
+            result = err.message;
         } finally {
             body = JSON.stringify(body);
+            const response = {
+                headers,
+                statusCode: status,
+                body: result,
+            };
+            return response;
         }
+    } else {
+        const response = {
+            headers,
+            statusCode: 400,
+            body: JSON.stringify(validate.errors),
+        };
+        return response;
     }
-    return {
-        statusCode,
-        body,
-        headers,
-    };
-};
+}
