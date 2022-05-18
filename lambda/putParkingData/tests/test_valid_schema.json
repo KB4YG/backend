@@ -1,0 +1,13 @@
+{
+    "state": {
+      "reported": {
+        "ParkingLotId": "value1",
+        "Temp": 1,
+        "OpenGeneral": 1,
+        "OpenHandicap": 1,
+        "UsedGeneral": 1,
+        "UsedHandicap": 1,
+        "Confidence": 1
+      }
+    }
+  }
