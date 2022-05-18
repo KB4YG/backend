@@ -13,7 +13,7 @@ const locationDataSchema = {
         Temp: { type: "number" },
         UsedGeneral: { type: "number" },
         UsedHandicap: { type: "number" },
-        Confidence: { type: "number" } // might need to be float32
+        Confidence: { type: "number" }
     },
     required: ["ParkingLotId", "Temp", "UsedGeneral", "UsedHandicap", "Confidence"],
     additionalProperties: true //Set to false once OpenGeneral is removed
