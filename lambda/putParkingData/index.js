@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk');
-const {v4: uuidv4} = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 
 const Ajv = require("ajv")
 const ajv = new Ajv()
@@ -16,7 +16,7 @@ const locationDataSchema = {
         Confidence: { type: "number" } // might need to be float32
     },
     required: ["ParkingLotId", "Temp", "UsedGeneral", "UsedHandicap", "Confidence"],
-    additionalProperties: false
+    additionalProperties: true //Set to false once OpenGeneral is removed
 }
 const validate = ajv.compile(locationDataSchema)
 
@@ -27,28 +27,35 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json',
     };
 
-    if (event.queryStringParameters && validate(event.queryStringParameters)) {
-        const locationData = event.queryStringParameters
-        locationData[Id] = uuidv4()
-        locationData[LastUpdate] = Date.now()
-        try {
-            await dynamo.put({
-                TableName: "ParkingLotData",
-                Item: {
-                    locationData
-                }
-            }).promise();
-            status = 200
-            result = "Successfully added location data to database"
-        } catch (err) {
-            status = 400;
-            result = err.message;
-        } finally {
-            body = JSON.stringify(body);
+    if (event.state.reported) {
+        if (validate(event.state.reported)) {
+            let result
+            let locationData = event.state.reported
+            locationData.Id = uuidv4()
+            locationData.LastUpdate = Date.now()
+            try {
+                await dynamo.put({
+                    TableName: "ParkingLotData",
+                    Item: locationData
+                }).promise();
+                status = 200
+                result = "Successfully added location data to database"
+            } catch (err) {
+                status = 400;
+                result = err.message;
+            } finally {
+                const response = {
+                    headers,
+                    statusCode: status,
+                    body: JSON.stringify(result),
+                };
+                return response;
+            }
+        } else {
             const response = {
                 headers,
-                statusCode: status,
-                body: result,
+                statusCode: 400,
+                body: JSON.stringify(validate.errors)
             };
             return response;
         }
@@ -56,7 +63,7 @@ exports.handler = async (event, context) => {
         const response = {
             headers,
             statusCode: 400,
-            body: JSON.stringify(validate.errors),
+            body: "Miss formated object 'state.reported' not found"
         };
         return response;
     }

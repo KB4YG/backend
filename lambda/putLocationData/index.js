@@ -1,11 +1,10 @@
 const AWS = require('aws-sdk');
-//const {v4: uuidv4} = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 
 const Ajv = require("ajv")
 const ajv = new Ajv()
 
 const dynamo = new AWS.DynamoDB.DocumentClient();
-
 
 const locationSchema = {
     type: "object",
@@ -15,7 +14,7 @@ const locationSchema = {
         County: { type: "string" },
         CountyURL: { type: "string" },
         FireDanger: { type: "string" },
-        Images: { elements: { type: "string" } },
+        Images: { type: "array", items: { type: "string" } },
         Latitude: { type: "string" },
         Location: { type: "string" },
         Longitude: { type: "string" },
@@ -33,32 +32,39 @@ const validate = ajv.compile(locationSchema)
 
 exports.handler = async (event, context) => {
     let status = 400;
+    let result
 
     const headers = {
         'Content-Type': 'application/json',
     };
 
-    if (event.queryStringParameters && validate(event.queryStringParameters)) {
-        const location = event.queryStringParameters
-        location[Id] = "15751bba-ff7a-4f12-b52c-9bf1db0ac5ac" //uuidv4()
-        try {
-            await dynamo.put({
-                TableName: "Locations",
-                Item: {
-                    location
-                }
-            }).promise();
-            status = 200
-            result = "Successfully added location to database"
-        } catch (err) {
-            status = 400;
-            result = err.message;
-        } finally {
-            body = JSON.stringify(body);
+    if (event.location) {
+        if (validate(event.location)) {
+            const location = event.location
+            location.Id = uuidv4()
+            try {
+                await dynamo.put({
+                    TableName: "Locations",
+                    Item: location
+                }).promise();
+                status = 200
+                result = "Successfully added location to database"
+            } catch (err) {
+                status = 400;
+                result = err.message;
+            } finally {
+                const response = {
+                    headers,
+                    statusCode: status,
+                    body: JSON.stringify(result),
+                };
+                return response;
+            }
+        } else {
             const response = {
                 headers,
-                statusCode: status,
-                body: result,
+                statusCode: 400,
+                body: JSON.stringify(validate.errors),
             };
             return response;
         }
@@ -66,7 +72,7 @@ exports.handler = async (event, context) => {
         const response = {
             headers,
             statusCode: 400,
-            body: JSON.stringify(validate.errors),
+            body: "Miss formated object 'location' not found"
         };
         return response;
     }
