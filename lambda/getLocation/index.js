@@ -50,8 +50,8 @@ exports.handler = async (event, context) => {
             
             console.log(parkingData)
             
-            if (query.parkingLotNameFilter !== null && query.parkingLotNameFilter !== undefined){
-                result = result.filter(location => location.ParkingLotName == query.parkingLotNameFilter)
+            if (query.ParkingLotName){ // Get location data by parking lot name
+                result = result.filter(location => location.ParkingLotName == query.ParkingLotName)
                 result = result.map(item => {
                     item = {...item, ParkingData:
                                             parkingData
@@ -60,8 +60,8 @@ exports.handler = async (event, context) => {
                     return item
                 })
             } 
-            else if (query.parkUrlFilter !== null && query.parkUrlFilter !== undefined){
-                result = result.filter(location => location.ParkURL == query.parkUrlFilter);
+            else if (query.ParkURL){ // Get location data by park URL
+                result = result.filter(location => location.ParkURL == query.ParkURL);
                 result = result.map(item => {
                     item = {...item, ParkingData: 
                                         parkingData
@@ -78,8 +78,8 @@ exports.handler = async (event, context) => {
                         
     
             } 
-            else if (query.recreationAreaFilter !== null && query.recreationAreaFilter !== undefined){
-                result = result.filter(location => location.RecreationArea == query.recreationAreaFilter)
+            else if (query.RecreationArea){ // Get location data by recreation area
+                result = result.filter(location => location.RecreationArea == query.RecreationArea)
                 result = result.map(item => {
                     item = {...item, ParkingData: 
                                             parkingData
@@ -93,15 +93,15 @@ exports.handler = async (event, context) => {
                         List : result
                         }
             }
-            else if  (query.countyFilter !== null && query.countyFilter !== undefined && query.countyFilter === "all"){
+            else if  (query.CountyURL && query.CountyURL === "all"){ // Get list of all countrys
                 var counties = [];
                 for(var i = 0; i<result.length;i++){
                     counties.push(result[i].County)
                 }
                 result = {Counties :[...new Set(counties)]}
             }
-            else if (query.countyFilter !== null && query.countyFilter !== undefined){
-                result = result.filter(location => location.CountyURL == query.countyFilter);
+            else if (query.CountyURL){ // Get location data by county url
+                result = result.filter(location => location.CountyURL == query.CountyURL);
                 result = result.map(item => {
                     item = {...item, ParkingData: 
                                 parkingData
@@ -153,9 +153,9 @@ exports.handler = async (event, context) => {
                     }
                     map[i] = obj
                 }
-                query.countyFilter = query.countyFilter.substring(1);
-                query.countyFilter = query.countyFilter.charAt(0).toUpperCase() + query.countyFilter.substring(1);
-                result = { County : query.countyFilter,
+                query.CountyURL = query.CountyURL.substring(1);
+                query.CountyURL = query.CountyURL.charAt(0).toUpperCase() + query.CountyURL.substring(1);
+                result = { County : query.CountyURL,
                         Longitude: long,
                         Latitude: lat,
                         List : map};
