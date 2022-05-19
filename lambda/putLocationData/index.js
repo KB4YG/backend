@@ -16,7 +16,8 @@ const locationSchema = {
         FireDanger: { type: "string" },
         Images: { type: "array", items: { type: "string" } },
         Latitude: { type: "string" },
-        Location: { type: "string" },
+        LocationURL: { type: "string" },
+        DisplayName: { type: "string" },
         Longitude: { type: "string" },
         ParkingLotName: { type: "string" },
         ParkURL: { type: "string" },
@@ -24,8 +25,8 @@ const locationSchema = {
         TotalGeneral: { type: "number" },
         TotalHandicap: { type: "number" }
     },
-    required: ["About", "Address", "County", "CountyURL", "FireDanger", "Images", "Latitude", "Location",
-        "Longitude", "ParkingLotName", "ParkURL", "RecreationArea", "TotalGeneral", "TotalHandicap"],
+    required: ["About", "Address", "County", "CountyURL", "FireDanger", "Images", "Latitude", "LocationURL",
+        "DisplayName", "Longitude", "ParkingLotName", "ParkURL", "RecreationArea", "TotalGeneral", "TotalHandicap"],
     additionalProperties: false
 }
 const validate = ajv.compile(locationSchema)

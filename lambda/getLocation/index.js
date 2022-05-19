@@ -4,33 +4,145 @@ const Ajv = require("ajv")
 const ajv = new Ajv()
 
 const dynamo = new AWS.DynamoDB.DocumentClient();
-
- const getParkingData = async () => {
-     let res;
-     try {
-          res = await dynamo.scan({ 
-                TableName: "ParkingLotData"
-            }).promise();
-     } catch (err) {
-         console.log(err)
-     }
-     if (res !== undefined) return res.Items;
- }
-
- const querySchema = {
+const DB = {
+    locations: "Locations",
+    parkingData: "ParkingLotData"
+}
+const querySchema = {
     type: "object",
     properties: {
-        ParkingLotName: { type: "string" },
-        RecreationArea: { type: "string" },
         CountyURL: { type: "string" },
         ParkURL: { type: "string" }
     },
     additionalProperties: false
 }
 const validate = ajv.compile(querySchema)
- 
+
+
+// DynamoDB is not good at querying for non key values:
+// Should either switch to new DB or create new table with sort key by time
+// https://stackoverflow.com/questions/9297326/is-it-possible-to-order-results-with-query-or-scan-in-dynamodb
+const getLatestParkingData = async (lotID) => {
+    try {
+        const params = {
+            FilterExpression: "ParkingLotId = :lotID",
+            ExpressionAttributeValues: {
+                ':lotID': lotID
+            },
+            // ScanIndexForward: false, 
+            // limit: 1,
+            TableName: DB.parkingData
+        };
+        var data = await dynamo.scan(params).promise()
+        data = data.Items.sort((a, b) => b.LastUpdate - a.LastUpdate)
+
+        return data[0]
+
+    } catch (error) {
+        console.error(error);
+        return error;
+    }
+}
+
+// Get RecreationArea () object based off ParkURL
+const getRecAreaByUrl = async (ParkURL) => {
+    try {
+        const params = {
+            FilterExpression: "ParkURL = :ParkURL",
+            ExpressionAttributeValues: {
+                ':ParkURL': ParkURL
+            },
+            TableName: DB.locations
+        };
+        var locations = await dynamo.scan(params).promise()
+
+        for (const lot of locations.Items) {
+            lot.ParkingData = await getLatestParkingData(lot.Id)
+        }
+
+        const result = {
+            "RecreationArea": locations.Items[0].RecreationArea,
+            "About": locations.Items[0].About,
+            "Images": locations.Items[0].Images,
+            "parkingLots": locations.Items
+        }
+        return result
+    } catch (error) {
+        console.error(error);
+        return error;
+    }
+}
+
+const getCounties = async () => {
+    try {
+        const params = {
+            TableName: DB.locations
+        };
+        var locations = await dynamo.scan(params).promise()
+        body = locations.Items
+
+        var counties = [];
+        for (const local of locations.Items) {
+            counties.push(local.County)
+        }
+        const result = { Counties: [...new Set(counties)] }
+        return result
+    } catch (error) {
+        console.error(error);
+        return error;
+    }
+}
+
+const getParkingLots = async () => {
+    try {
+        const params = {
+            TableName: DB.locations
+        };
+        var locations = await dynamo.scan(params).promise()
+
+        for (const lot of locations.Items) {
+            lot.ParkingData = await getLatestParkingData(lot.Id)
+        }
+
+        const result = locations.Items
+        return result
+    } catch (error) {
+        console.error(error);
+        return error;
+    }
+}
+
+const getCountyByURL = async (CountyURL) => {
+    try {
+        const params = {
+            FilterExpression: "CountyURL = :CountyURL",
+            ExpressionAttributeValues: {
+                ':CountyURL': CountyURL
+            },
+            TableName: DB.locations
+        };
+        var locations = await dynamo.scan(params).promise()
+
+        for (const lot of locations.Items) {
+            lot.ParkingData = await getLatestParkingData(lot.Id)
+        }
+
+        const result = {
+            "County": locations.Items[0].County,
+            "Longitude": locations.Items[0].Longitude,
+            "Latitude": locations.Items[0].Latitude,
+            "parkingLots": locations.Items
+        }
+        return result
+    } catch (error) {
+        console.error(error);
+        return error;
+    }
+}
+
 exports.handler = async (event, context) => {
     let status = 400;
+    let result;
 
     const headers = {
         'Content-Type': 'application/json',
@@ -38,146 +150,28 @@ exports.handler = async (event, context) => {
 
     if (event.queryStringParameters && validate(event.queryStringParameters)) {
         const query = event.queryStringParameters
-        
+
         try {
-            result = await dynamo.scan({ 
-                TableName: "Locations"
-            }).promise();
-            
-            result = result.Items;
-            
-            let parkingData = await getParkingData()
-            
-            console.log(parkingData)
-            
-            if (query.ParkingLotName){ // Get location data by parking lot name
-                result = result.filter(location => location.ParkingLotName == query.ParkingLotName)
-                result = result.map(item => {
-                    item = {...item, ParkingData:
-                                            parkingData
-                                            .sort((a, b) => b.LastUpdate - a.LastUpdate)
-                                            .filter(parkingLot => parkingLot.ParkingLotId == item.Id)}
-                    return item
-                })
-            } 
-            else if (query.ParkURL){ // Get location data by park URL
-                result = result.filter(location => location.ParkURL == query.ParkURL);
-                result = result.map(item => {
-                    item = {...item, ParkingData: 
-                                        parkingData
-                                        .sort((a, b) => b.LastUpdate - a.LastUpdate)
-                                        .filter(parkingLot => parkingLot.ParkingLotId == item.Id)}
-                    return item
-                })
-            
-                result = {RecreationArea: result[0].RecreationArea,
-                        About: result[0].About,
-                        Images: result[0].Images,
-                        List : result
-                        }
-                        
-    
-            } 
-            else if (query.RecreationArea){ // Get location data by recreation area
-                result = result.filter(location => location.RecreationArea == query.RecreationArea)
-                result = result.map(item => {
-                    item = {...item, ParkingData: 
-                                            parkingData
-                                            .sort((a, b) => b.LastUpdate - a.LastUpdate)
-                                            .filter(parkingLot => parkingLot.ParkingLotId == item.Id)}
-                    return item
-                    })
-                result = {RecreationArea: result[0].RecreationArea,
-                        About: result[0].About,
-                        Images: result[0].Images,
-                        List : result
-                        }
+            if (query.ParkURL) { // Get location data by park URL
+                result = await getRecAreaByUrl(query.ParkURL)
+                status = 200;
             }
-            else if  (query.CountyURL && query.CountyURL === "all"){ // Get list of all countrys
-                var counties = [];
-                for(var i = 0; i<result.length;i++){
-                    counties.push(result[i].County)
-                }
-                result = {Counties :[...new Set(counties)]}
+            else if (query.CountyURL && query.CountyURL === "all") { // Get list of all countries
+                result = await getCounties()
+                status = 200;
             }
-            else if (query.CountyURL){ // Get location data by county url
-                result = result.filter(location => location.CountyURL == query.CountyURL);
-                result = result.map(item => {
-                    item = {...item, ParkingData: 
-                                parkingData
-                                .sort((a, b) => b.LastUpdate - a.LastUpdate)
-                                .filter(parkingLot => parkingLot.ParkingLotId == item.Id)}
-                    return item
-                })
-                console.log("result")
-                console.log(JSON.stringify(result))
-                console.log("result")
-                console.log(JSON.stringify(result))
-                var recAreas = [];
-                for(var i = 0; i<result.length;i++){
-                    recAreas.push(result[i].RecreationArea)
-                }
-                let long = result[0].Longitude;
-                let lat = result[0].Latitude;
-                recAreas =  [...new Set(recAreas)];
-                console.log(recAreas)
-                let map = [];
-                
-                for (var i =0; i<recAreas.length;i++){
-                    map.push(new Map());
-                    map[i].set("RecreationArea", recAreas[i]);
-                    map[i].set("List", []);
-                    
-                    for(let j = 0; j<result.length; j++){
-                        console.log(result.length)
-                        console.log(j)
-                        if(result!=[] && result[j].RecreationArea==recAreas[i]){
-                            map[i].get("List").push(result.splice(j, 1)[0]);
-                            j--;
-                        }
-                        console.log(result.length)
-                        console.log(j)
-                        
-                    }
-                    console.log("map")
-                    console.log(map[i]);
-                    map[i].set("Images", map[i].get("List")[0].Images)
-                    map[i].set("About", map[i].get("List")[0].About)
-                    
-                }
-                
-                let obj = Object.create(null);
-                for (var i =0; i<recAreas.length;i++){
-                    for (let [k,v] of map[i]) {
-                        obj[k] = v;
-                    }
-                    map[i] = obj
-                }
-                query.CountyURL = query.CountyURL.substring(1);
-                query.CountyURL = query.CountyURL.charAt(0).toUpperCase() + query.CountyURL.substring(1);
-                result = { County : query.CountyURL,
-                        Longitude: long,
-                        Latitude: lat,
-                        List : map};
-                        
+            else if (query.CountyURL) { // Get location data by county url
+                result = await getCountyByURL(query.CountyURL)
+                status = 200;
             }
-            else{
-                result = body.map(item => {
-                    item = {...item, ParkingData: 
-                        parkingData
-                        .sort((a, b) => b.LastUpdate - a.LastUpdate)
-                        .filter(parkingLot => parkingLot.ParkingLotId == item.Id)
-                    }
-                    return item
-                })
-    
+            else {
+                result = await getParkingLots()
+                status = 200;
             }
-    
         } catch (err) {
             status = 400;
             result = err.message;
         } finally {
-            body = JSON.stringify(body);
             const response = {
                 headers,
                 statusCode: status,
@@ -185,8 +179,6 @@ exports.handler = async (event, context) => {
             };
             return response;
         }
-
-
     } else {
         const response = {
             headers,
