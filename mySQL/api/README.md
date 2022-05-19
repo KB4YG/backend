@@ -2,10 +2,10 @@
 
 ## Development
 
-To update this example against the latest local changes to @vendia/serverless-express:
-cd to mySQL
-`docker compose up`
-cd to /api
+To update this example against the latest local changes to @vendia/serverless-express: <br>
+cd to mySQL<br>
+`docker compose up`<br>
+cd to /api<br>
 ```bash
 npm i
 npm run build
