@@ -1,5 +1,17 @@
 # Example
 
+## Development
+
+To update this example against the latest local changes to @vendia/serverless-express:
+cd to mySQL
+`docker compose up`
+cd to /api
+```bash
+npm i
+npm run build
+npm run start
+```
+
 In addition to a basic Lambda function and Express server, the `example` directory includes a [Swagger file](http://swagger.io/specification/), [CloudFormation template](https://aws.amazon.com/cloudformation/aws-cloudformation-templates/) with [Serverless Application Model (SAM)](https://github.com/awslabs/serverless-application-model), and helper scripts to help you set up and manage your application.
 
 ## Steps for running the example
@@ -41,13 +53,3 @@ If you need to make modifications to your API Gateway API or other AWS resources
 ## Node.js version
 
 This example was written against Node.js 12
-
-## Development
-
-To update this example against the latest local changes to @vendia/serverless-express:
-
-```bash
-npm i ../..
-npm run build
-npm run local
-```
