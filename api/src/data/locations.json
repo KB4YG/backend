@@ -1,0 +1,15 @@
+[
+    {
+        "about": "Test park",
+        "address": "123 Easy St",
+        "county": "Benton",
+        "fireDanger": "Low",
+        "latitude": "123'456.789",
+        "longitude": "123'456.789",
+        "name": "TestLocation1",
+        "parkingLotName": "Fitton Green",
+        "recreationArea": "Fitton Green",
+        "totalGeneral": "10",
+        "totalHandicap": "5"
+    }
+]
