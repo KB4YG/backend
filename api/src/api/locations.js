@@ -43,7 +43,7 @@ router.get('/', async function (req, res) {
      * Construct and send response.
      */
     res.status(200).json({
-        businesses: result.rows,
+        locations: result.rows,
         pageNumber: page,
         totalPages: lastPage,
         pageSize: numPerPage,
@@ -51,6 +51,18 @@ router.get('/', async function (req, res) {
         links: links
     })
 })
+
+router.get('/:businessId', async function (req, res, next) {
+    const businessId = req.params.businessId
+    const business = await Business.findByPk(businessId, {
+      include: [ Photo, Review ]
+    })
+    if (business) {
+      res.status(200).send(business)
+    } else {
+      next()
+    }
+  })
 
 router.post('/', async function (req, res) {
     try {
@@ -64,5 +76,31 @@ router.post('/', async function (req, res) {
         }
     }
 })
+
+router.patch('/:businessId', async function (req, res, next) {
+    const businessId = req.params.businessId
+    const result = await Business.update(req.body, {
+      where: { id: businessId },
+      fields: BusinessClientFields
+    })
+    if (result[0] > 0) {
+      res.status(204).send()
+    } else {
+      next()
+    }
+  })
+  
+  /*
+   * Route to delete a business.
+   */
+  router.delete('/:businessId', async function (req, res, next) {
+    const businessId = req.params.businessId
+    const result = await Business.destroy({ where: { id: businessId }})
+    if (result > 0) {
+      res.status(204).send()
+    } else {
+      next()
+    }
+  })
 
 module.exports = router;
