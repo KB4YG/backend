@@ -55,12 +55,10 @@ router.get('/', async function (req, res) {
 
 router.get('/:locationId', async function (req, res, next) {
   const locationId = parseInt(req.params.locationId)
-  const parkingData = await ParkingData.findOne()
   const location = await Location.findByPk(locationId, {
-    include: [ Image ]
+    include: [ Image, { model: ParkingData, limit: 1, order: [[ 'dateTime', 'DESC' ]] } ]
   })
   if (location) {
-    location.parkingData = parkingData
     res.status(200).send(location)
   } else {
     next()
@@ -106,4 +104,4 @@ router.delete('/:locationId', requireAuthentication, async function (req, res, n
   }
 })
 
-module.exports = router;
+module.exports = router

@@ -4,7 +4,7 @@ const { ParkingData } = require('../models/parkingData')
 
 
 router.get('/:locationId', async function (req, res) {
-    let locationId = parseInt(req.params.locationId)
+    const locationId = parseInt(req.params.locationId)
     let page = parseInt(req.query.page) || 1
     page = page < 1 ? 1 : page
     const numPerPage = 10
@@ -42,3 +42,5 @@ router.get('/:locationId', async function (req, res) {
     links: links
     })
 })
+
+module.exports = router

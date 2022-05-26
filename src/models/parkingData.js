@@ -12,6 +12,7 @@ const ParkingData = sequelize.define('parkingData', {
 exports.ParkingData = ParkingData
 exports.ParkingDataClientFields = [
   'confidence',
+  'dateTime',
   'locationId',
   'temp',
   'usedGeneral',
