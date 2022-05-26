@@ -3,21 +3,23 @@ const { DataTypes } = require('sequelize')
 const sequelize = require('../lib/sequelize')
 const { ParkingData } = require('./parkingData')
 const { Image } = require('./image')
+const { FireDanger } = require('./fireDanger')
 
+// Note: DataTypes.STRING is VARCHAR(255) so 255 char max unless otherwise specified
 const Location = sequelize.define('location', {
-  about: { type: DataTypes.STRING, required: true },
-  address: { type: DataTypes.STRING, required: true },
-  county: { type: DataTypes.STRING, required: true },
-  fireDanger: { type: DataTypes.STRING, required: true },
-  latitude: { type: DataTypes.STRING, required: true },
-  location: { type: DataTypes.STRING, required: true },
-  longitude: { type: DataTypes.STRING, required: true },
-  parkingLotName: { type: DataTypes.STRING, required: true },
-  recreationArea: { type: DataTypes.STRING, required: true },
-  totalGeneral: { type: DataTypes.INTEGER, required: true },
-  totalHandicap: { type: DataTypes.INTEGER, required: true }
+  about: { type: DataTypes.STRING(1024) },
+  address: { type: DataTypes.STRING },
+  county: { type: DataTypes.STRING },
+  countyURL: { type: DataTypes.STRING },
+  displayName: { type: DataTypes.STRING },
+  latitude: { type: DataTypes.STRING },
+  longitude: { type: DataTypes.STRING },
+  parkingLotName: { type: DataTypes.STRING },
+  parkURL: { type: DataTypes.STRING },
+  recreationArea: { type: DataTypes.STRING },
+  totalGeneral: { type: DataTypes.INTEGER },
+  totalHandicap: { type: DataTypes.INTEGER }
 })
-
 
 /*
 * Set up one-to-many relationship between Business and Photo.
@@ -27,6 +29,9 @@ ParkingData.belongsTo(Location)
 
 Location.hasMany(Image, { foreignKey: { allowNull: true }})
 Image.belongsTo(Location)
+
+Location.hasMany(FireDanger, { foreignKey: { allowNull: false }})
+FireDanger.belongsTo(Location)
 
 exports.Location = Location
 
@@ -38,11 +43,12 @@ exports.LocationClientFields = [
   'about',
   'address',
   'county',
-  'fireDanger',
+  'countyURL',
+  'displayName',
   'latitude',
-  'location',
   'longitude',
   'parkingLotName',
+  'parkURL',
   'recreationArea',
   'totalGeneral',
   'totalHandicap'

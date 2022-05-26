@@ -4,7 +4,7 @@ const router = express.Router()
 const { ValidationError } = require('sequelize')
 const { Location, LocationClientFields } = require('../models/location')
 
-const { ParkingData } = require('../models/parkingData')
+const { getLatestData } = require('../models/parkingData')
 const { Image } = require('../models/image')
 
 const { requireAuthentication } = require('../lib/auth')
@@ -55,10 +55,13 @@ router.get('/', async function (req, res) {
 
 router.get('/:locationId', async function (req, res, next) {
   const locationId = parseInt(req.params.locationId)
+  const parkingData = await getLatestData(locationId)
   const location = await Location.findByPk(locationId, {
     include: [ Image, { model: ParkingData, limit: 1, order: [[ 'dateTime', 'DESC' ]] } ]
   })
   if (location) {
+    if(parkingData)
+      location.setDataValue('parkingData', parkingData);
     res.status(200).send(location)
   } else {
     next()
@@ -104,4 +107,57 @@ router.delete('/:locationId', requireAuthentication, async function (req, res, n
   }
 })
 
-module.exports = router
+
+router.get('/:locationId/data', async function (req, res) {
+  const locationId = parseInt(req.params.locationId)
+  let page = parseInt(req.query.page) || 1
+  page = page < 1 ? 1 : page
+  const numPerPage = 10
+  const offset = (page - 1) * numPerPage
+
+  const result = await ParkingData.findAndCountAll({
+      limit: numPerPage,
+      offset: offset,
+      where: { locationId: locationId }
+  })
+
+  /*
+  * Generate HATEOAS links for surrounding pages.
+  */
+  const lastPage = Math.ceil(result.count / numPerPage)
+  const links = {}
+  if (page < lastPage) {
+      links.nextPage = `/parkingData?page=${page + 1}`
+      links.lastPage = `/parkingData?page=${lastPage}`
+  }
+  if (page > 1) {
+      links.prevPage = `/parkingData?page=${page - 1}`
+      links.firstPage = '/parkingData?page=1'
+  }
+
+  /*
+  * Construct and send response.
+  */
+  res.status(200).json({
+  parkingData: result.rows,
+  pageNumber: page,
+  totalPages: lastPage,
+  pageSize: numPerPage,
+  totalCount: result.count,
+  links: links
+  })
+})
+
+
+router.get('/:locationId/latest', async function (req, res) {
+  const locationId = parseInt(req.params.locationId)
+
+  const result = await getLatestData(locationId)
+  if (result) {
+      res.status(200).send(result)
+    } else {
+      next()
+    }
+})
+
+module.exports = router;
