@@ -7,7 +7,13 @@ const sequelize = require('../lib/sequelize')
 const Image = sequelize.define('image', {
   locationId: { type: DataTypes.INTEGER, required: true },
   caption: { type: DataTypes.STRING, required: false },
-  file: { type: DataTypes.JSON, required: true }
+  url: { type: DataTypes.STRING, required: true }
 })
 
 exports.Image = Image
+
+exports.ImageClientFields = [
+  'locationId',
+  'caption',
+  'url'
+]
