@@ -1,0 +1,337 @@
+openapi: 3.0.0
+info:
+  title: KB4YG API
+  description: API for getting and sending information from the KB4YG IoT nodes and tje KB4YG app.
+servers:
+  - url: 
+    description: 
+components:
+  schemas:
+    ParkingData:
+      type: object
+      properties:
+        confidence:
+		  type: float
+          example: 62.2
+        dateTime:
+          type: string
+          example: "123"
+		temp:
+		  type: float
+		  example: 50
+		usedGeneral:
+		  type: integer
+		  example: 5
+		usedHandicap:
+		  type: integer
+		  example: 1
+      # All properties are required
+      required:  
+        - confidence
+        - dateTime
+		- temp
+		- usedGeneral
+		- usedHandicap
+	locations:
+      type: object
+      properties:
+        about:
+		  type: string
+          example: Test park
+        address:
+          type: string
+          example: "123 Easy St"
+		county:
+		  type: string
+		  example: "Benton"
+		fireDanger:
+		  type: string
+		  example: "Low"
+		latitude:
+		  type: string
+		  example: "123'456.789"
+		longitude:
+		  type: "123'456.789"
+		  example: string
+		name:
+		  type: string
+		  example: "TestLocation1"
+		parkingLotName:
+		  type: string
+		  example: "Fitton Green"
+		recreationArea:
+		  type: string
+		  example: "Fitton Green"
+		totalGeneral:
+		  type: integer
+		  example: 10
+		totalHandicap:
+		  type: integer
+		  example: 5
+      # All properties are required
+      required:  
+        - about 
+        - address
+		- county
+		- fireDanger
+		- latitude
+		- longitude
+		- name
+		- parkingLotName
+		- recreationArea
+		- totalGeneral
+		- totalHandicap
+		
+	Images:
+      type: object
+      properties:
+        locationId:
+		  type: integer
+          example: 1
+        caption:
+          type: string
+          example: "Test"
+		url:
+		  type: string
+		  example: "http://localhost"
+      # All properties are required
+      required:  
+        - locationId
+        - caption
+		- url
+	Images:
+      type: object
+      properties:
+        name:
+		  type: string
+          example: "John Programming"
+        email:
+          type: string
+          example: "123@hotmail.com"
+		passsword:
+		  type: string
+		  example: "password"
+      # All properties are required
+      required:  
+        - name
+        - email
+		- password
+
+paths:
+  /images:
+    post:
+      summary: Adds an image to the database. 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Images'
+	  responses:
+        '201':    # status code
+          description: the image id 
+          content:
+            application/json:
+              schema: 
+                type:string
+		'400':    # status code
+          description: an error message
+          content:
+            application/json:
+              schema: 
+                type:string
+		
+  /images/{imageId}	
+	get:
+      summary: retrieves an image object from an image id. 
+      responses:
+        '200':    # status code
+          description: The image object 
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schema/Images'
+	
+	patch:
+      summary: updates a given image object. 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Images'
+	  responses:
+        '204':    # status code
+	delete:
+      summary: deletes a given image object. 
+	  responses:
+        '204':    # status code
+  /locations 
+	get:
+      summary: retrieves all location data. 
+	  responses:
+        '200':    # status code
+          description: A paginated list of all location objects
+          content:
+            application/json:
+              schema: 
+                type: object
+				properties: 
+				  locations: 
+					type: array
+					  locations:
+						$ref: '#/components/schema/locations'
+				  pageNumber:
+					type: integer
+				  totalPages:
+					type: integer
+				  pageSize:
+					type: integer
+				  totalCount:
+					type: integer
+				  links:
+					type: string
+					
+    post: 
+	  summary: Adding a location to the location database. 
+	  requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/locations'
+	  responses:
+        '201':    # status code
+          description: the location id 
+          content:
+            application/json:
+              schema: 
+                type:string
+		'400':    # status code
+          description: an error message
+          content:
+            application/json:
+              schema: 
+                type:string
+  /locations/{locationId}
+	get:
+	  summary: retrieving a location object from a given id. 
+      responses:
+        '200':    # status code
+          description: the location object
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/locations'
+	patch:
+	  requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/locations'
+      responses:
+        '204':    # status code
+     
+	delete:
+	  summary: deleting a location object from a given id. 
+      responses:
+        '204':    # status code
+  /ParkingData/{locationId} 
+	get:
+      summary: retrieves all parking data 
+	  responses:
+        '200':    # status code
+          description: A paginated list of all parking data objects
+          content:
+            application/json:
+              schema: 
+                type: object
+				properties: 
+				  locations: 
+					type: array
+					  locations:
+						$ref: '#/components/schema/ParkingData'
+				  pageNumber:
+					type: integer
+				  totalPages:
+					type: integer
+				  pageSize:
+					type: integer
+				  totalCount:
+					type: integer
+				  links:
+					type: string
+	/users
+	  post: 
+	    summary: creating a new user
+	    requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+			    type: object
+			    properties: 
+				  name: 
+				    type: string
+			      email:
+				    type: string
+			      password:
+				    type: string
+	  responses:
+        '200':    # status code
+          description: creating an account is successful
+          content:
+            application/json:
+              schema: 
+                type:string
+		'400':    # status code
+          description: an error message
+          content:
+            application/json:
+              schema: 
+                type:string
+	  get: 
+	    summary: getting the information for the signed in user. 
+		  responses:
+			'200':    # status code
+			  description: retrieved the user data successfully
+			  content:
+				application/json:
+				  schema: 
+					$ref: '#/components/schema/users'
+	/users/login
+	  post: 
+	    summary: logging a user in
+	    requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+			    type: object
+			    properties: 
+				  name: 
+				    type: string
+			      email:
+				    type: string
+			      password:
+				    type: string
+	    responses:
+          '200':    # status code
+            description: logged in successfully
+            content:
+              application/json:
+                schema: 
+                  type: token
+		  '400':    # status code
+            description: request did not contain login credentials
+            content:
+              application/json:
+                schema: 
+                  type:string
+		  '401':    # status code
+            description: login credentials were incorrect
+            content:
+              application/json:
+                schema: 
+                  type:string
