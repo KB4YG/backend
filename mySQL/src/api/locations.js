@@ -57,7 +57,7 @@ router.get('/:locationId', async function (req, res, next) {
   const locationId = parseInt(req.params.locationId)
   const parkingData = await getLatestData(locationId)
   const location = await Location.findByPk(locationId, {
-    include: [ Image ]
+    include: [ Image, { model: ParkingData, limit: 1, order: [[ 'dateTime', 'DESC' ]] } ]
   })
   if (location) {
     if(parkingData)

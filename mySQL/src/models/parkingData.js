@@ -19,6 +19,7 @@ exports.getLatestData = getLatestData
 exports.ParkingData = ParkingData
 exports.ParkingDataClientFields = [
   'confidence',
+  'dateTime',
   'locationId',
   'temp',
   'usedGeneral',
