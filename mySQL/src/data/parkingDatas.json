@@ -5,5 +5,33 @@
         "temp": 45,
         "usedGeneral": 7,
         "usedHandicap": 0
+    },
+    {
+        "confidence": 71.2,
+        "locationId": 1,
+        "temp": 14,
+        "usedGeneral": 7,
+        "usedHandicap": 0
+    },
+    {
+        "confidence": 62.2,
+        "locationId": 2,
+        "temp": 70,
+        "usedGeneral": 7,
+        "usedHandicap": 0
+    },
+    {
+        "confidence": 71.2,
+        "locationId": 2,
+        "temp": 42,
+        "usedGeneral": 2,
+        "usedHandicap": 1
+    },
+    {
+        "confidence": 62.2,
+        "locationId": 3,
+        "temp": 32,
+        "usedGeneral": 7,
+        "usedHandicap": 0
     }
 ]

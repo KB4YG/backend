@@ -1,10 +1,14 @@
 const express = require('express')
 const router = express.Router()
-const { ParkingData } = require('../models/parkingData')
+
+const { ValidationError } = require('sequelize')
+const { ParkingData, ParkingDataClientFields, getLatestData} = require('../models/parkingData')
+
+const { requireAuthentication } = require('../lib/auth')
 
 
-router.get('/:locationId', async function (req, res) {
-    let locationId = parseInt(req.params.locationId)
+router.get('/:dataID', async function (req, res) {
+    const locationId = parseInt(req.params.locationId)
     let page = parseInt(req.query.page) || 1
     page = page < 1 ? 1 : page
     const numPerPage = 10
@@ -13,7 +17,7 @@ router.get('/:locationId', async function (req, res) {
     const result = await ParkingData.findAndCountAll({
         limit: numPerPage,
         offset: offset,
-        where: { locationId: locationId }
+        where: { id: dataID }
     })
 
     /*
@@ -42,3 +46,45 @@ router.get('/:locationId', async function (req, res) {
     links: links
     })
 })
+
+//TODO: add error handling seems to break if locationId is an invalid one
+router.post('/',requireAuthentication,  async function (req, res) {
+    try {
+      const location = await ParkingData.create(req.body, ParkingDataClientFields)
+      res.status(201).send({ id: location.id })
+    } catch (e) {
+      if (e instanceof ValidationError) {
+        res.status(400).send({ error: e.message })
+      } else {
+        throw e
+      }
+    }
+  })
+  
+  router.patch('/:dataID', requireAuthentication, async function (req, res, next) {
+    const dataID = req.params.dataID
+    const result = await ParkingData.update(req.body, {
+      where: { id: dataID },
+      fields: LocationClientFields
+    })
+    if (result[0] > 0) {
+      res.status(204).send()
+    } else {
+      next()
+    }
+  })
+    
+  /*
+    * Route to delete a business.
+    */
+  router.delete('/:dataID', requireAuthentication, async function (req, res, next) {
+    const dataID = req.params.dataID
+    const result = await ParkingData.destroy({ where: { id: dataID }})
+    if (result > 0) {
+      res.status(204).send()
+    } else {
+      next()
+    }
+  })
+
+module.exports = router;
