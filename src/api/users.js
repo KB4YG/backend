@@ -62,3 +62,5 @@ router.get('/', requireAuthentication, async function (req, res) {
     const user = await User.findByPk(parseInt(req.user))
     res.status(200).send(user)
 })
+
+module.exports = router
