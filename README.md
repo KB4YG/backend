@@ -68,16 +68,11 @@ Please look at the wiki page to find detailed instructions on how to deploy the 
 <!-- License -->
 ## :warning: License
 
-!! TODO
+Distributed under the GPL-3.0 license. See [LICENSE.txt](https://github.com/KB4YG/ml/blob/main/LICENSE) for more information.
 
 
 <!-- Contact -->
 ## :handshake: Contact
-!! TODO
-
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
-
-Project Link: [https://github.com/Louis3797/awesome-readme-template](https://github.com/Louis3797/awesome-readme-template)
 
 
 <!-- Acknowledgments -->
