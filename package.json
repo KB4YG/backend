@@ -4,7 +4,7 @@
   "description": "Example application for running a Node Express app on AWS Lambda using Amazon API Gateway.",
   "main": "lambda.js",
   "config": {
-    "s3BucketName": "kb4yg-node",
+    "s3BucketName": "kb4yg-node-js",
     "region": "us-west-2",
     "cloudFormationStackName": "ServerlessExpressHttpApiStack",
     "functionName": "",

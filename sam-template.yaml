@@ -1,98 +1,140 @@
----
 AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
 Description: Serverless Express Application/API powered by API Gateway and Lambda
 Parameters:
   DomainName:
     Type: String
     Description: API Domain name
     Default: ''
-
-# Conditions:
-#   UseDomainName:
-#     !Not
-#       - !Equals
-#         - !Ref DomainName
-#         - ''
-
-Resources:
-  ExpressApi:
-    Type: AWS::Serverless::HttpApi
-
-  ExpressLambdaFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./dist
-      Handler: main.handler
-      MemorySize: 1024
-      Runtime: nodejs12.x
-      Timeout: 30
-      Events:
-        ProxyApiRoot:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref ExpressApi
-
-  # MyApiCertificate:
-  #   Type: 'AWS::CertificateManager::Certificate'
-  #   Condition: UseDomainName
-  #   Properties:
-  #     DomainName: !Sub '*.${DomainName}'
-  #     DomainValidationOptions:
-  #       - DomainName: !Sub '*.${DomainName}'
-  #         ValidationDomain: !Ref DomainName
-  #     SubjectAlternativeNames:
-  #       - !Ref DomainName
-  
-  # MyApiDomainName:
-  #   Type: 'AWS::ApiGateway::DomainName'
-  #   Condition: UseDomainName
-  #   Properties:
-  #     CertificateArn: !Ref MyApiCertificate
-  #     DomainName: !Ref DomainName
-  
-  # MyApiBasePathMapping:
-  #   Type: 'AWS::ApiGateway::BasePathMapping'
-  #   Condition: UseDomainName
-  #   Properties:
-  #     RestApiId: !Ref ExpressApi
-  #     DomainName: !Ref MyApiDomainName
-  #     BasePath: '(none)'
-  #     Stage: prod
-  
-  # Route53HostedZone:
-  #   Type: AWS::Route53::HostedZone
-  #   Condition: UseDomainName
-  #   Properties:
-  #     Name: !Ref DomainName
-  
-  # MyApiRoute53RecordSetGroup:
-  #   Type: AWS::Route53::RecordSetGroup
-  #   Condition: UseDomainName
-  #   Properties:
-  #     HostedZoneId: !Ref Route53HostedZone
-  #     RecordSets:
-  #       - Name: !Sub ${DomainName}.
-  #         Type: A
-  #         AliasTarget:
-  #           EvaluateTargetHealth: false
-  #           HostedZoneId: !GetAtt MyApiDomainName.DistributionHostedZoneId
-  #           DNSName: !GetAtt MyApiDomainName.DistributionDomainName
-
 Outputs:
   LambdaFunctionConsoleUrl:
     Description: Console URL for the Lambda Function.
-    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${ExpressLambdaFunction}
-
+    Value: !Sub >-
+      https://${AWS::Region}.console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${ExpressLambdaFunction}
   ApiGatewayApiConsoleUrl:
     Description: Console URL for the API Gateway API's Stage.
-    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/apigateway/home?region=${AWS::Region}#/apis/${ExpressApi}/stages/prod
-
+    Value: !Sub >-
+      https://${AWS::Region}.console.aws.amazon.com/apigateway/home?region=${AWS::Region}#/apis/${ExpressApi}/stages/prod
   ApiUrl:
-    Description: Invoke URL for your API. Clicking this link will perform a GET request
-      on the root resource of your API.
-    Value: !Sub https://${ExpressApi}.execute-api.${AWS::Region}.amazonaws.com/
-
+    Description: >-
+      Invoke URL for your API. Clicking this link will perform a GET request on
+      the root resource of your API.
+    Value: !Sub 'https://${ExpressApi}.execute-api.${AWS::Region}.amazonaws.com/'
   LambdaFunctionName:
     Description: Name of the Serverless Express Lambda Function
     Value: !Ref ExpressLambdaFunction
+Resources:
+  DB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      AllocatedStorage: '20'
+      DBInstanceClass: db.t3.micro
+      DBInstanceIdentifier: kb4yg-database
+      DBName: kb4yg
+      Engine: mysql
+      MasterUsername: admin
+      MasterUserPassword: TestSuperSecretPassword
+      StorageEncrypted: true
+  ImageBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: kb4yg-images
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 0ef4594b-0fcb-4248-a3c0-386b1f8e6171
+  ImageBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: kb4yg-images
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicRead
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:GetObject'
+              - 's3:GetObjectVersion'
+            Resource: 'arn:aws:s3:::kb4yg-images/*'
+  ExpressLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: f2f91b5b-0e3e-4701-89b2-c46e91353d03
+    Properties:
+      Code:
+        S3Bucket: kb4yg-node-js
+        S3Key: 95de6a538569c981af758883b5cc482b
+      Handler: main.handler
+      MemorySize: 1024
+      Role: !GetAtt 
+        - ExpressLambdaFunctionRole
+        - Arn
+      Runtime: nodejs12.x
+      Timeout: 30
+      Tags:
+        - Key: 'lambda:createdBy'
+          Value: SAM
+      Environment:
+        Variables:
+          MYSQL_HOST: !Sub '${DB}.czunh135hvr3.${AWS::Region}.rds.amazonaws.com'
+  ExpressLambdaFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Tags:
+        - Key: 'lambda:createdBy'
+          Value: SAM
+  ExpressLambdaFunctionProxyApiRootPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref ExpressLambdaFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - >-
+          arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/*
+        - __ApiId__: !Ref ExpressApi
+          __Stage__: '*'
+  ExpressApi:
+    Type: 'AWS::ApiGatewayV2::Api'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 729825ea-f5cf-48d6-b56c-33069a4131f1
+    Properties:
+      Body:
+        info:
+          version: '1.0'
+          title: !Ref 'AWS::StackName'
+        paths:
+          $default:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub >-
+                  arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ExpressLambdaFunction.Arn}/invocations
+                payloadFormatVersion: '2.0'
+              isDefaultRoute: true
+              responses: {}
+        openapi: 3.0.1
+        tags:
+          - name: 'httpapi:createdBy'
+            x-amazon-apigateway-tag-value: SAM
+  ExpressApiApiGatewayDefaultStage:
+    Type: 'AWS::ApiGatewayV2::Stage'
+    Properties:
+      ApiId: !Ref ExpressApi
+      StageName: $default
+      Tags:
+        'httpapi:createdBy': SAM
+      AutoDeploy: true

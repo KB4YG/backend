@@ -55,10 +55,18 @@ router.get('/', async function (req, res) {
 
 router.get('/:locationId', async function (req, res, next) {
   const locationId = parseInt(req.params.locationId)
-  const location = await Location.findByPk(locationId, {
+  let location = await Location.findByPk(locationId, {
     include: [ Image, { model: ParkingData, limit: 1, order: [[ 'dateTime', 'DESC' ]] } ]
   })
   if (location) {
+    const links = {
+      parkURL: `/location?recreationArea=${location.recreationArea}`,
+      countyURL: `/location?county=${location.county}`
+    }
+    location = {
+      location,
+      links: links
+    }
     res.status(200).send(location)
   } else {
     next()
