@@ -1,0 +1,48 @@
+[
+    {
+        "about": "Fitton Green Natural Area is a 308-acre recreation area near Corvallis, Oregon. It boasts three access points to its five mile long hiking trail. Dog-friendly and considered moderately challenging.\n\nVisit https://greenbeltlandtrust.org/conserving-land/fitton-green-natural-area/ for more information.",
+        "address": "321 hard street",
+        "county": "Benton",
+        "countyURL": "/benton",
+        "displayName": "Fitton Green",
+        "latitude": 44.576171,
+        "locationURL": "/benton/fitton-green/fitton-green-3",
+        "longitude": -123.370791,
+        "parkingLotName": "Fitton Green 3",
+        "parkURL": "/benton/fitton-green",
+        "recreationArea": "Fitton-Green",
+        "totalGeneral": 11,
+        "totalHandicap": 0
+       },
+       {
+        "about": "Fitton Green Natural Area is a 308-acre recreation area near Corvallis, Oregon. It boasts three access points to its five mile long hiking trail. Dog-friendly and considered moderately challenging.\n\nVisit https://greenbeltlandtrust.org/conserving-land/fitton-green-natural-area/ for more information.",
+        "address": "321 hard street",
+        "county": "Benton",
+        "countyURL": "/benton",
+        "displayName": "Fitton Green",
+        "latitude": 44.576171,
+        "locationURL": "/benton/fitton-green/fitton-green-2",
+        "longitude": -123.370791,
+        "parkingLotName": "Fitton Green 2",
+        "parkURL": "/benton/fitton-green",
+        "recreationArea": "Fitton-Green",
+        "totalGeneral": 11,
+        "totalHandicap": 0
+       },
+       {
+        "about": "Fitton Green Natural Area is a 308-acre recreation area near Corvallis, Oregon. It boasts three access points to its five mile long hiking trail. Dog-friendly and considered moderately challenging.\n\nVisit https://greenbeltlandtrust.org/conserving-land/fitton-green-natural-area/ for more information.",
+        "address": "321 hard street",
+        "county": "Benton",
+        "countyURL": "/benton",
+        "displayName": "Fitton Green",
+        "latitude": 44.576171,
+        "locationURL": "/benton/fitton-green/fitton-green-1",
+        "longitude": -123.370791,
+        "parkingLotName": "Fitton Green 1",
+        "parkURL": "/benton/fitton-green",
+        "recreationArea": "Fitton-Green",
+        "totalGeneral": 11,
+        "totalHandicap": 0
+       }
+
+]
