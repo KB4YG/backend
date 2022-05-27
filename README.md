@@ -40,7 +40,6 @@
 # :notebook_with_decorative_cover: Table of Contents
 
 - [Project Overview](#star2-about-the-project)
-  * [Screenshots](#camera-screenshots)
   * [Tech Stack](#space_invader-tech-stack)
 - [Getting Started](#toolbox-getting-started)
 - [License](#warning-license)
@@ -50,14 +49,7 @@
 
 <!-- About the Project -->
 ## :star2: About the Project
-This repo contains all the code and setup instructions for running our running software on our Raspberry pi nodes. You'll find the code for the main script in in `src/main.py`.
-
-<!-- Screenshots -->
-### :camera: Screenshots
-
-<div align="center"> 
-  <img src="https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png" alt="screenshot" width="600px"/>
-</div>
+This repo is divided into two seperate folder. `Lamdba` which represents the currently deployed AWS lambda and database functions while `mySQL` contains a new implementation based on Node.JS and MySQL which is designed to be more expandable for future teams.
 
 <!-- TechStack -->
 ### :space_invader: Tech Stack
@@ -70,9 +62,8 @@ This repo contains all the code and setup instructions for running our running s
 <!-- Getting Started -->
 ## 	:toolbox: Getting Started
 
-This repo is divided into two seperate folder. `Lamdba` which represents the currently deployed AWS lambda and database functions while `mySQL` contains a new implementation based on Node.JS and MySQL which is designed to be more expandable for future teams.
+Please look at the wiki page to find detailed instructions on how to deploy the backend
 
-   
 
 <!-- License -->
 ## :warning: License
