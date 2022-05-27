@@ -43,10 +43,6 @@
   * [Screenshots](#camera-screenshots)
   * [Tech Stack](#space_invader-tech-stack)
 - [Getting Started](#toolbox-getting-started)
-  * [Prerequisites](#bangbang-prerequisites)
-  * [Running Tests](#test_tube-running-tests)
-- [Usage](#eyes-usage)
-- [FAQ](#grey_question-faq)
 - [License](#warning-license)
 - [Contact](#handshake-contact)
 - [Acknowledgements](#gem-acknowledgements)
@@ -68,33 +64,15 @@ This repo contains all the code and setup instructions for running our running s
 
 #### Software
 <li><a href="https://amazon.com">AWS</a></li>
+<li><a href="https://amazon.com">Node.JS</a></li>
+<li><a href="https://amazon.com">MySQL</a></li>
 
 <!-- Getting Started -->
 ## 	:toolbox: Getting Started
 
-<!-- Prerequisites -->
-### :bangbang: Prerequisites
+This repo is divided into two seperate folder. `Lamdba` which represents the currently deployed AWS lambda and database functions while `mySQL` contains a new implementation based on Node.JS and MySQL which is designed to be more expandable for future teams.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
-
-```bash
-```
    
-<!-- Running Tests -->
-### :test_tube: Running Tests
-
-To run tests, run the following command
-
-```bash
-  pytest 
-```
-
-<!-- Usage -->
-## :eyes: Usage
-
-```bash
-  
-```
 
 <!-- License -->
 ## :warning: License
